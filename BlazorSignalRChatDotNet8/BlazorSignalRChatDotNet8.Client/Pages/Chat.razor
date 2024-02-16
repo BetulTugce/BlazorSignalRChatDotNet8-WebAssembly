@@ -1,0 +1,58 @@
+﻿@page "/chat"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+@rendermode InteractiveWebAssembly
+
+<h3>Chat</h3>
+
+@if (IsConnected)
+{
+    <input type="text" @bind=userInput />
+    <input type="text-area" @bind=messageInput />
+    <button @onclick=Send>Send</button>
+
+    <ul id="messagesList">
+        @foreach (var message in messages)
+        {
+            <li>@message</li>
+        }
+    </ul>
+}
+else
+{
+    <span>Connecting...</span>
+}
+@code {
+    // SignalR hub'ına bağlantıyı temsil ediyor..
+    private HubConnection hubConnection;
+
+    // Gelen mesajları depolamak için bir liste..
+    private List<string> messages = new List<string>();
+
+    private string userInput;
+    private string messageInput;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // SignalR hub'ına bağlantı oluşturuyor..
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/chathub")) // Bağlanılacak hub URL'sini belirler..
+        .Build();
+
+        // Sunucudan gelen mesajları işliyor..
+        hubConnection.On<string, string>("ReceiveMessage", async (user, message) =>
+        {
+            var encodedMsg = $"{user}: {message}"; // Kullanıcı adı ve mesajı birleştirir..
+            messages.Add(encodedMsg); // Mesajı messages listesine ekler..
+            await InvokeAsync(StateHasChanged); // UI güncellemesini gerçekleştirir..
+        });
+
+        await hubConnection.StartAsync(); // Hub bağlantısını başlatır..
+    }
+
+    // Mesaj göndermek için..
+    Task Send() => hubConnection.SendAsync("SendMessage", userInput, messageInput);
+
+    // Bağlantının durumunu kontrol eder..
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+}
