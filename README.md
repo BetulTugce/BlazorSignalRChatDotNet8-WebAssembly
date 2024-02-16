@@ -4,4 +4,4 @@ This project is created to learn how to use ASP.NET Core SignalR with Blazor by 
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/BetulTugce/BlazorSignalRChatDotNet8-WebAssembly?tab=MIT-1-ov-file) file for details.
